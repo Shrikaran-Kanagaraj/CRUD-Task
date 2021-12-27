@@ -1,71 +1,77 @@
 import Axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Form, Modal, Container, Row, Button, Table } from 'react-bootstrap';
+import { Form, FormGroup, FormControl, FormLabel, Modal, Container, Row, Button, Table } from 'react-bootstrap';
 
 // import Toaster from "./Toaster";
 
 export default function UserRecordModule(props) {
 
     const [data, setData] = useState(null);
-    // const [deleteID, setDeleteID] = useState(null);
     const [itemDeleted, setItemDeleted] = useState([]);
 
     const [name, setName] = useState("");
     const [username, setUserName] = useState("");
     const [email, setEmail] = useState("");
 
-    const [modalShow, setModalShow] = useState(false);
+    const [modalAddShow, setModalAddShow] = useState(false);
     const [modalEditShow, setModalEditShow] = useState(false);
 
+    const [addFormData, setAddFormData] = useState([]);
+    const [editFormData, setEditFormData] = useState([]);
 
-    const [addName,setAddName] = useState("");
-    const [addUserName,setAddUsername] = useState("");
-    const [addEmail,setAddEmail] = useState("");
+    let formElements = [{
+        label: "Name",
+        key: 'name'
+    }, {
+        label: "UserName",
+        key: 'username'
+    },
+    {
+        label: "Email",
+        key: 'email'
+    }
+    ]
 
 
-
-    const handleChangeForAddName=(e)=>{
-        setAddName(e.target.value)
-        console.log(e.target.value);
+    const addHandleChange = (value, key) => {
+        setAddFormData({ ...addFormData, ...{ [key]: value } });
     }
 
-    const handleChangeForAddUsername=(e)=>{
-        setAddUsername(e.target.value)
-        console.log(e.target.value);
+    const editHandleChange = (value, key) => {
+        setAddFormData({ ...editFormData, ...{ [key]: value } });
     }
 
-    const handleChangeForAddEmail=(e)=>{
-        setAddEmail(e.target.value)
-        console.log(e.target.value);
-    }
 
-    const handleSubmit = (e) =>{
-        e.preventDefault()
-        
-        setAddName("");
-        setAddUsername("");
-        setAddEmail("");
-    }
- 
+    
+
 
 
     const AddUser = () => {
-        if (name != "" && username != "" && email != "") {
+        console.log(addFormData);
+        if (addFormData.name != "" && addFormData.username != "" && addFormData.email != "") {
             var newData = data;
             var objData = {
-                name: name,
-                username: username,
-                email: email
+                name: addFormData.name,
+                username: addFormData.username,
+                email: addFormData.email
 
             }
 
             console.log(objData);
-            newData.push(objData)
+            newData.push(objData);
             // console.log("NEW DATAA: ", newData);
             setData(newData);
-            setName("");
-            setUserName("");
-            setEmail("");
+
+            var objData1 = {
+                name: "",
+                username: "",
+                email: ""
+
+            }
+            setAddFormData(objData1);
+
+            setModalAddShow(false)
+
 
         }
         else {
@@ -80,10 +86,11 @@ export default function UserRecordModule(props) {
             let newData = [...data];
             let indexToRemove = newData.findIndex(x => x.id === idx);
             if (indexToRemove > -1) {
-                newData.splice(indexToRemove, 1);
+                let deletedValue = newData.splice(indexToRemove, 1);
                 console.log("NEW DATA: ", newData);
                 setData(newData);
-                setItemDeleted(newData)
+                setItemDeleted(deletedValue);
+                console.log("Deleted Value:", deletedValue);
             }
         }
 
@@ -141,7 +148,7 @@ export default function UserRecordModule(props) {
 
             <Container className="py-4 my-3">
                 <div align="right"  >
-                    <Button onClick={() => setModalShow(true)}>Add User</Button>
+                    <Button onClick={() => setModalAddShow(true)}>Add User</Button>
                 </div>
                 <Row>
                     {
@@ -203,8 +210,8 @@ export default function UserRecordModule(props) {
             </Container>
 
             <Modal
-                show={modalShow}
-                onHide={() => setModalShow(false)}
+                show={modalAddShow}
+                onHide={() => setModalAddShow(false)}
                 size="lg"
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
@@ -216,27 +223,28 @@ export default function UserRecordModule(props) {
                 </Modal.Header>
                 <Modal.Body>
                     <h3>Enter Details</h3>
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3" >
-                            <Form.Label>Enter Name</Form.Label>
-                            <Form.Control type="text" placeholder="Name" value={addName} onChange={handleChangeForAddName} />
-                        </Form.Group>
+                    <Form>
+                        {formElements.map((formEle, idx) => {
+                            return (
+                                <div className='m-5' key={idx}>
+                                    <FormGroup >
 
-                        <Form.Group className="mb-3" >
-                            <Form.Label>Enter Username</Form.Label>
-                            <Form.Control type="text" placeholder="Username" value={addUserName} onChange={handleChangeForAddUsername}/>
-                        </Form.Group>
+                                        <FormLabel>{formEle.label}</FormLabel>
+                                        <FormControl value={addFormData[formEle.key]}
+                                            onChange={(e) => { e.preventDefault(); addHandleChange(e.target.value, formEle.key) }}
+                                        />
+                                    </FormGroup>
+                                </div>
 
-                        <Form.Group className="mb-3" >
-                            <Form.Label>Enter Email</Form.Label>
-                            <Form.Control type="email" placeholder="Email" value={addEmail} onChange={handleChangeForAddEmail}/>
-                        </Form.Group>
+                            )
+                        })
+
+                        }
+                        <Button onClick={AddUser} >Submit</Button>
+
                     </Form>
 
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button >Submit</Button>
-                </Modal.Footer>
             </Modal>
 
 
